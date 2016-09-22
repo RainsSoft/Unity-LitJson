@@ -1,77 +1,54 @@
 #region Header
-/**
- * IJsonWrapper.cs
- *   Interface that represents a type capable of handling all kinds of JSON
- *   data. This is mainly used when mapping objects through JsonMapper, and
- *   it's implemented by JsonData.
- *
- * The authors disclaim copyright to this source code. For more details, see
- * the COPYING file included with this distribution.
- **/
+/*
+ * The authors disclaim copyright to this source code.
+ * For more details, see the COPYING file included with this distribution.
+ */
 #endregion
-
 
 using System.Collections;
 using System.Collections.Specialized;
 
+namespace LitJson {
 
-namespace LitJson
-{
-	public enum JsonType
-	{
-		None,
+/// <summary>
+/// This enum contains the possible types a JSON value can have.
+/// </summary>
+public enum JsonType {
+	None,
+	Object,
+	Array,
+	String,
+	Natural,
+	Real,
+	Boolean
+}
 
-		Object,
-		Array,
-		String,
-		Int,
-		Long,
-		Double,
-		Boolean
-	}
+/// <summary>
+/// Interface that represents a type capable of handling all kinds of JSON data.
+/// This is mainly used when mapping objects through JsonMapper, and it's implemented by JsonData.
+/// </summary>
+public interface IJsonWrapper : IList, IOrderedDictionary {
+	bool IsObject { get; }
+	bool IsArray { get; }
+	bool IsString { get; }
+	bool IsNatural { get; }
+	bool IsReal { get; }
+	bool IsBoolean { get; }
 
-	public interface IJsonWrapper : IList, IOrderedDictionary
-	{
-		bool IsArray   { get; }
+	JsonType GetJsonType();
+	string GetString();
+	long GetNatural();
+	double GetReal();
+	bool GetBoolean();
 
-		bool IsBoolean { get; }
+	void SetJsonType(JsonType type);
+	void SetString(string val);
+	void SetNatural(long val);
+	void SetReal(double val);
+	void SetBoolean(bool val);
 
-		bool IsDouble  { get; }
+	string ToJson();
+	void ToJson(JsonWriter writer);
+}
 
-		bool IsInt     { get; }
-
-		bool IsLong    { get; }
-
-		bool IsObject  { get; }
-
-		bool IsString  { get; }
-
-		bool     GetBoolean ();
-
-		double   GetDouble ();
-
-		int      GetInt ();
-
-		JsonType GetJsonType ();
-
-		long     GetLong ();
-
-		string   GetString ();
-
-		void SetBoolean (bool val);
-
-		void SetDouble (double val);
-
-		void SetInt (int val);
-
-		void SetJsonType (JsonType type);
-
-		void SetLong (long val);
-
-		void SetString (string val);
-
-		string ToJson ();
-
-		void   ToJson (JsonWriter writer);
-	}
 }
