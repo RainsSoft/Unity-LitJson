@@ -177,7 +177,7 @@ namespace LitJson {
             }
         }
 
-       private void PutString(string str) {
+    private void PutString(string str) {
             Put(string.Empty);
             TextWriter.Write('"');
             int n = str.Length;
@@ -210,7 +210,7 @@ namespace LitJson {
                     continue;
                 }
                 //Ð´»ù±¾ºº×Ö
-                //tp://www.qqxiuzi.cn/zh/hanzi-unicode-bianma.php
+                //http://www.qqxiuzi.cn/zh/hanzi-unicode-bianma.php
                 if(charindex >= 0x4E00 && charindex <= 0x9FA5) {
                     TextWriter.Write(str[i]);
                     continue;
