@@ -762,7 +762,8 @@ namespace LitJson {
             if (obj is IJsonWrapper) {
                 writer.WriteJsonWrapper(obj as IJsonWrapper, privateWriter);
                 //if (privateWriter) {
-                //    writer.TextWriter.Write(((IJsonWrapper)obj).ToJson());
+                //   // writer.TextWriter.Write(((IJsonWrapper)obj).ToJson());
+                //  writer.WriteRaw(((IJsonWrapper)obj).ToJson());
                 //}
                 //else {
                 //    ((IJsonWrapper)obj).ToJson(writer);
