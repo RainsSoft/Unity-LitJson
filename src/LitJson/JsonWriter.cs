@@ -299,10 +299,18 @@ namespace LitJson {
             }
             context.ExpectingValue = false;
         }
+        public void WriteRaw(string str) {
+            DoValidation(Condition.Value);
+            PutNewline();
 
+            Put(str);
+
+            context.ExpectingValue = false;
+        }
         public void WriteJsonWrapper(IJsonWrapper wrapper, bool privateWriter) {
             if (privateWriter) {
-                this.TextWriter.Write(wrapper.ToJson());
+                //this.TextWriter.Write(wrapper.ToJson());
+                this.WriteRaw(wrapper.ToJson());
             }
             else {
                 // ((IJsonWrapper)obj).ToJson(writer);
@@ -398,6 +406,7 @@ namespace LitJson {
             }
             context.ExpectingValue = true;
         }
+       
     }
 
 }
