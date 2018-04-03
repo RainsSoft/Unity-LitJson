@@ -13,9 +13,11 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 
-namespace LitJson {
+namespace LitJson
+{
 
-    internal struct PropertyMetadata {
+    internal struct PropertyMetadata
+    {
         public Type Type { get; set; }
         public MemberInfo Info { get; set; }
         public JsonIgnoreWhen Ignore { get; set; }
@@ -24,7 +26,8 @@ namespace LitJson {
         public bool Include { get; set; }
     }
 
-    internal struct ArrayMetadata {
+    internal struct ArrayMetadata
+    {
         public bool IsArray { get; set; }
         public bool IsList { get; set; }
 
@@ -42,7 +45,8 @@ namespace LitJson {
         }
     }
 
-    internal struct ObjectMetadata {
+    internal struct ObjectMetadata
+    {
         public IDictionary<string, PropertyMetadata> Properties { get; set; }
         public bool IsDictionary { get; set; }
 
@@ -74,10 +78,14 @@ namespace LitJson {
     /// <summary>
     /// JSON to .Net object and object to JSON conversions.
     /// </summary>
-    public class JsonMapper {
+    public class JsonMapper
+    {
         private static readonly int maxNestingDepth;
         private static readonly IFormatProvider datetimeFormat;
-
+        private const string DefaultDateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK";
+        private static DateTimeStyles _dateTimeStyles = DateTimeStyles.RoundtripKind;
+        private static CultureInfo _culture;
+        //
         private static readonly IDictionary<Type, ExporterFunc> baseExportTable;
         private static readonly IDictionary<Type, ExporterFunc> customExportTable;
 
@@ -97,6 +105,7 @@ namespace LitJson {
         static JsonMapper() {
             maxNestingDepth = 100;
             datetimeFormat = DateTimeFormatInfo.InvariantInfo;
+            _culture = CultureInfo.CurrentCulture;
 
             arrayMetadata = new Dictionary<Type, ArrayMetadata>();
             objectMetadata = new Dictionary<Type, ObjectMetadata>();
@@ -113,7 +122,10 @@ namespace LitJson {
             dicKeyExporterTable = new Dictionary<Type, ExporterFunc>();
             RegisterBaseExporters();
             RegisterBaseImporters();
-			//以下注册字典key的自定义序列化方法
+#if UNITY_5
+            UnityTypeBindings.Register();
+#endif
+            //以下注册字典key的自定义序列化方法
             JsonMapper.RegisterDictionaryKeyImporter<string, int>((s) => {
                 return int.Parse(s);
             });
@@ -545,7 +557,7 @@ namespace LitJson {
                         object keyValue = null;
 
 
-                        if(valueType.GetGenericArguments() != null && valueType.GetGenericArguments().Length > 0) {
+                        if (valueType.GetGenericArguments() != null && valueType.GetGenericArguments().Length > 0) {
                             Type t = valueType.GetGenericArguments()[0];
                             var keyimporter = GetDictionaryKeyImporter(t);
                             if (keyimporter != null) {
@@ -555,7 +567,7 @@ namespace LitJson {
                                 try {
                                     keyValue = Convert.ChangeType(property, t);
                                 }
-                                catch(InvalidCastException ee) {
+                                catch (InvalidCastException ee) {
                                     throw new NotSupportedException("字典的序列化，不支持" + valueType.GetGenericArguments()[0].Name + "类型的key");
                                 }
                             }
@@ -581,8 +593,8 @@ namespace LitJson {
         private static Dictionary<Type, Type> m_firstGenericTypeArg = new Dictionary<Type, Type>();
         private static Type ValueTypeHasGenericTypeArg(Type valueType) {
             Type t;
-            if(m_firstGenericTypeArg.TryGetValue(valueType,out t)==false){
-                Type[] ary=valueType.GetGenericArguments();
+            if (m_firstGenericTypeArg.TryGetValue(valueType, out t) == false) {
+                Type[] ary = valueType.GetGenericArguments();
                 if (ary != null && ary.Length > 0) {
                     t = ary[0];
                     m_firstGenericTypeArg.Add(valueType, t);
@@ -664,83 +676,111 @@ namespace LitJson {
         }
 
         private static void RegisterBaseExporters() {
-            baseExportTable[typeof(sbyte)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(sbyte)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToInt64((sbyte)obj));
             };
-            baseExportTable[typeof(byte)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(byte)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToInt64((byte)obj));
             };
-            baseExportTable[typeof(char)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(char)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToString((char)obj));
             };
-            baseExportTable[typeof(short)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(short)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToInt64((short)obj));
             };
-            baseExportTable[typeof(ushort)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(ushort)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToInt64((ushort)obj));
             };
-            baseExportTable[typeof(int)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(int)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToInt64((int)obj));
             };
-            baseExportTable[typeof(uint)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(uint)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToInt64((uint)obj));
             };
-            baseExportTable[typeof(ulong)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(ulong)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToUInt64((ulong)obj));
             };
-            baseExportTable[typeof(float)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(float)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToDouble((float)obj));
             };
-            baseExportTable[typeof(decimal)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(decimal)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToDecimal((decimal)obj));
             };
-            baseExportTable[typeof(DateTime)] = delegate(object obj, JsonWriter writer) {
+            baseExportTable[typeof(DateTime)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToString((DateTime)obj, datetimeFormat));
+            };
+            baseExportTable[typeof(DateTimeOffset)] = delegate (object obj, JsonWriter writer) {
+                var v = (DateTimeOffset)obj;
+                string str = string.Format("{0}T{1}+{2}:{3}",
+                     v.ToString("yyyy-MM-dd"),
+                     v.TimeOfDay.ToString(),
+                     v.Offset.Hours, v.Offset.Minutes
+                    );
+                //string.Format("{0}-{1}-{2}T{3}:{4}:{5}+{6}:{7}",
+                //     v.Year, v.Month, v.Date,
+                //     v.Hour, v.Minute, v.Second + v.Millisecond * 0.001f,
+                //     //时区
+                //     v.Offset.Hours,v.Offset.Minutes                   
+                //     );
+                writer.Write(str);
             };
         }
 
         private static void RegisterBaseImporters() {
-            RegisterImporter(baseImportTable, typeof(long), typeof(sbyte), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(sbyte), delegate (object input) {
                 return Convert.ToSByte((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(byte), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(byte), delegate (object input) {
                 return Convert.ToByte((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(short), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(short), delegate (object input) {
                 return Convert.ToInt16((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(ushort), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(ushort), delegate (object input) {
                 return Convert.ToUInt16((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(int), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(int), delegate (object input) {
                 return Convert.ToInt32((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(uint), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(uint), delegate (object input) {
                 return Convert.ToUInt32((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(ulong), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(ulong), delegate (object input) {
                 return Convert.ToUInt64((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(float), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(float), delegate (object input) {
                 return Convert.ToSingle((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(double), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(double), delegate (object input) {
                 return Convert.ToDouble((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(long), typeof(decimal), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(long), typeof(decimal), delegate (object input) {
                 return Convert.ToDecimal((long)input);
             });
-            RegisterImporter(baseImportTable, typeof(double), typeof(float), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(double), typeof(float), delegate (object input) {
                 return Convert.ToSingle((double)input);
             });
-            RegisterImporter(baseImportTable, typeof(double), typeof(decimal), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(double), typeof(decimal), delegate (object input) {
                 return Convert.ToDecimal((double)input);
             });
-            RegisterImporter(baseImportTable, typeof(string), typeof(char), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(string), typeof(char), delegate (object input) {
                 return Convert.ToChar((string)input);
             });
-            RegisterImporter(baseImportTable, typeof(string), typeof(DateTime), delegate(object input) {
+            RegisterImporter(baseImportTable, typeof(string), typeof(DateTime), delegate (object input) {
                 return Convert.ToDateTime((string)input, datetimeFormat);
+            });
+            RegisterImporter(baseImportTable, typeof(string), typeof(DateTimeOffset), delegate (object input) {
+                //if (!string.IsNullOrEmpty(dateTimeFormat)) {
+                //    return DateTimeOffset.ParseExact(dateText, _dateTimeFormat, Culture, _dateTimeStyles);
+                //}
+                //else {
+                //    return DateTimeOffset.Parse(dateText, Culture, _dateTimeStyles);
+                //}
+                DateTimeOffset dtf = DateTimeOffset.MinValue;
+                if (DateTimeOffset.TryParse((string)input, out dtf) == false) {//Convert.ToDateTime((string)input, datetimeFormat);
+                    dtf = DateTimeOffset.MinValue;
+                }
+                return dtf;
             });
         }
 
@@ -774,23 +814,23 @@ namespace LitJson {
                 writer.Write((string)obj);
                 return;
             }
-            else if(obj is int) {
+            else if (obj is int) {
                 writer.Write((int)obj);
                 return;
             }
-            else if(obj is bool) {
+            else if (obj is bool) {
                 writer.Write((bool)obj);
                 return;
             }
-            else if(obj is byte) {
+            else if (obj is byte) {
                 writer.Write((byte)obj);
                 return;
             }
-            else if(obj is double) {
+            else if (obj is double) {
                 writer.Write((double)obj);
                 return;
             }
-            else if(obj is long) {
+            else if (obj is long) {
                 writer.Write((long)obj);
                 return;
             }
@@ -856,7 +896,7 @@ namespace LitJson {
                     IJsonWrapper jsonw = (entry.Key as IJsonWrapper);
                     //var exporterkey = GetExporter(entry.Key.GetType());
                     var exporterkey = GetDictionaryKeyExporter(entry.Key.GetType());
-                    if(exporterkey != null) {
+                    if (exporterkey != null) {
                         writer.WriteStartPropertyName();
                         exporterkey(entry.Key, writer);
                         writer.WriteEndPropertyName("");
@@ -899,13 +939,13 @@ namespace LitJson {
                 if (enumType == typeof(long)) {
                     writer.Write((long)obj);
                 }
-                else if(enumType == typeof(int)) {
+                else if (enumType == typeof(int)) {
                     writer.Write((int)obj);
                 }
-                else if(enumType == typeof(byte)) {
+                else if (enumType == typeof(byte)) {
                     writer.Write((byte)obj);
                 }
-                else if(enumType == typeof(short)) {
+                else if (enumType == typeof(short)) {
                     writer.Write((short)obj);
                 }
                 else {
@@ -1024,7 +1064,7 @@ namespace LitJson {
             return (T)ReadValue(typeof(T), reader);
         }
 
-        public static object ToObject(string json,Type t) {
+        public static object ToObject(string json, Type t) {
             JsonReader reader = new JsonReader(json);
             return ReadValue(t, reader);
         }
@@ -1039,27 +1079,27 @@ namespace LitJson {
         }
 
         public static void RegisterExporter<T>(ExporterFunc<T> exporter) {
-            ExporterFunc wrapper = delegate(object obj, JsonWriter writer) {
+            ExporterFunc wrapper = delegate (object obj, JsonWriter writer) {
                 exporter((T)obj, writer);
             };
             customExportTable[typeof(T)] = wrapper;
         }
 
         public static void RegisterImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
-            ImporterFunc wrapper = delegate(object input) {
+            ImporterFunc wrapper = delegate (object input) {
                 return importer((TJson)input);
             };
             RegisterImporter(customImportTable, typeof(TJson), typeof(TValue), wrapper);
         }
         public static void RegisterDictionaryKeyImporter<TJson, TRet>(ImporterFunc<TJson, TRet> importer) {
-            ImporterFunc wrapper = delegate(object input) {
+            ImporterFunc wrapper = delegate (object input) {
                 return importer((TJson)input);
             };
             dicKeyImportTable.Add(typeof(TRet), wrapper);
         }
         public static void RegisterDictionaryKeyExporter<T>(ExporterFunc<T> exporter) {
             ExporterFunc wrapper = delegate (object obj, JsonWriter writer) {
-                 exporter((T)obj, writer);
+                exporter((T)obj, writer);
             };
             dicKeyExporterTable.Add(typeof(T), wrapper);
         }

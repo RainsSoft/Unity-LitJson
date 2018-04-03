@@ -37,9 +37,36 @@ namespace LitJson {
 			JsonMapper.RegisterImporter<string,Type>((s) => {
 				return Type.GetType(s);
 			});
+            //DateTimeOffset
+            //Action<DateTimeOffset, JsonWriter> writeDateTimeOffset = (v, w) => {
+            //    //{"D1":"2018-03-21T03:54:36.2747187Z","D2":"2018-03-21T03:54:36.2747187+00:00"}
+            //    w.WriteObjectStart();
+            //    //w.WriteProperty("D1", string.Format("{0}-{1}-{2}T{3}:{4}:{5}Z",
+            //    //    v.Year,v.Month,v.Date,
+            //    //    v.Hour,v.Minute,v.Second+v.Millisecond*0.001f));
+            //    w.WriteProperty("D2", string.Format("{0}-{1}-{2}T{3}:{4}:{5}+{6}:{7}",
+            //         v.Year, v.Month, v.Date,
+            //         v.Hour, v.Minute, v.Second + v.Millisecond * 0.001f,
+            //         //时区
+            //         "00","00"
+            //         ));
+            //    w.WriteObjectEnd();
 
-			// -- Vector2
-			Action<Vector2,JsonWriter> writeVector2 = (v,w) => {
+            //};
+            //JsonMapper.RegisterExporter<DateTimeOffset>((v,w)=> {
+            //    writeDateTimeOffset(v,w);
+            //});
+            ////Action<DateTimeOffset, JsonReader> readDateTimeOffset=((v,r)=> {
+            ////    //怎么读呢
+            ////});
+            ////JsonMapper.RegisterImporter((s) => {
+            ////    return 
+            ////});
+            //JsonMapper.RegisterFactory<DateTimeOffset>(()=> {
+            //    return new DateTimeOffset();
+            //});
+            // -- Vector2
+            Action<Vector2,JsonWriter> writeVector2 = (v,w) => {
 				w.WriteObjectStart();
 				w.WriteProperty("x",v.x);
 				w.WriteProperty("y",v.y);
