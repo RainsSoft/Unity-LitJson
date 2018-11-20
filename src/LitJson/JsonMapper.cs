@@ -122,7 +122,7 @@ namespace LitJson
             dicKeyExporterTable = new Dictionary<Type, ExporterFunc>();
             RegisterBaseExporters();
             RegisterBaseImporters();
-#if UNITY_5
+#if UNITY_5 || UNITY_2018
             UnityTypeBindings.Register();
 #endif
             //以下注册字典key的自定义序列化方法
