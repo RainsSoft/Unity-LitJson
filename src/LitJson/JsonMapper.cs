@@ -125,7 +125,7 @@ namespace LitJson
 #if UNITY_5 || UNITY_2018
             UnityTypeBindings.Register();
 #endif
-            //ÒÔÏÂ×¢²á×ÖµäkeyµÄ×Ô¶¨ÒåĞòÁĞ»¯·½·¨
+            //ä»¥ä¸‹æ³¨å†Œå­—å…¸keyçš„è‡ªå®šä¹‰åºåˆ—åŒ–æ–¹æ³•
             JsonMapper.RegisterDictionaryKeyImporter<string, int>((s) => {
                 return int.Parse(s);
             });
@@ -532,7 +532,7 @@ namespace LitJson
                         //    keyValue = Convert.ChangeType(property, t);
                         //}
                         //catch (InvalidCastException ee) {
-                        //    throw new NotSupportedException("×ÖµäµÄĞòÁĞ»¯£¬²»Ö§³Ö" + valueType.GenericTypeArguments[0].Name + "ÀàĞÍµÄkey");
+                        //    throw new NotSupportedException("å­—å…¸çš„åºåˆ—åŒ–ï¼Œä¸æ”¯æŒ" + valueType.GenericTypeArguments[0].Name + "ç±»å‹çš„key");
                         //}
                         //object v;
                         //JsonData value = ReadValue(tdata.ElementType, reader) as JsonData;
@@ -548,7 +548,7 @@ namespace LitJson
                         //    v = Convert.ChangeType(d, valueType.GenericTypeArguments[1]);
                         //}
                         //else {
-                        //    throw new NotSupportedException("×ÖµäµÄĞòÁĞ»¯£¬²»Ö§³Ö" + valueType.GenericTypeArguments[1].Name + "ÀàĞÍµÄvalue");
+                        //    throw new NotSupportedException("å­—å…¸çš„åºåˆ—åŒ–ï¼Œä¸æ”¯æŒ" + valueType.GenericTypeArguments[1].Name + "ç±»å‹çš„value");
                         //}
 
                         //((IDictionary)instance).Add(keyValue, v);
@@ -568,7 +568,7 @@ namespace LitJson
                                     keyValue = Convert.ChangeType(property, t);
                                 }
                                 catch (InvalidCastException ee) {
-                                    throw new NotSupportedException("×ÖµäµÄĞòÁĞ»¯£¬²»Ö§³Ö" + valueType.GetGenericArguments()[0].Name + "ÀàĞÍµÄkey");
+                                    throw new NotSupportedException("å­—å…¸çš„åºåˆ—åŒ–ï¼Œä¸æ”¯æŒ" + valueType.GetGenericArguments()[0].Name + "ç±»å‹çš„key");
                                 }
                             }
                         }
@@ -711,17 +711,15 @@ namespace LitJson
             };
             baseExportTable[typeof(DateTimeOffset)] = delegate (object obj, JsonWriter writer) {
                 var v = (DateTimeOffset)obj;
-                string str = string.Format("{0}T{1}+{2}:{3}",
-                     v.ToString("yyyy-MM-dd"),
-                     v.TimeOfDay.ToString(),
-                     v.Offset.Hours, v.Offset.Minutes
-                    );
-                //string.Format("{0}-{1}-{2}T{3}:{4}:{5}+{6}:{7}",
-                //     v.Year, v.Month, v.Date,
-                //     v.Hour, v.Minute, v.Second + v.Millisecond * 0.001f,
-                //     //Ê±Çø
-                //     v.Offset.Hours,v.Offset.Minutes                   
-                //     );
+                //ISO8601æ ¼å¼
+                string str = v.ToString("O");
+                //ä¸‹é¢è¿™ç§æ–¹å¼ä¹Ÿæ˜¯ISO8601
+                //string.Format("{0}T{1}+{2}:{3}",
+                //     v.ToString("yyyy-MM-dd"),
+                //     v.TimeOfDay.ToString(),
+                //     v.Offset.Hours.ToString().PadLeft(2, '0'), v.Offset.Minutes.ToString().PadLeft(2, '0')
+                //    );
+
                 writer.Write(str);
             };
         }
