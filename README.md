@@ -2,7 +2,7 @@ LitJSON
 
 A .Net library to handle conversions from and to JSON (JavaScript Object Notation) strings. This fork has been edited specificity for use with Unity3D.
 
-Originally created by lbv.
+Originally created by lbv. rainssoft update using in project
 
 Installation
 
