@@ -24,6 +24,9 @@ namespace LitJson.Extensions {
 			w.WritePropertyName(name);
 			w.Write(value);
 		}
-
-	}
+        public static void WriteProperty(this JsonWriter w, string name, float value) {
+            w.WritePropertyName(name);
+            w.Write(value);
+        }
+    }
 }

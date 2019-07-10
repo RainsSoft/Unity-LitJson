@@ -266,6 +266,17 @@ namespace LitJson {
             }
             context.ExpectingValue = false;
         }
+        public void Write(float number) {
+            DoValidation(Condition.Value);
+            PutNewline();
+            string str = number.ToString("R", numberFormat);
+            Put(str);
+            if (str.IndexOf('.') == -1 && str.IndexOf('E') == -1) {
+                TextWriter.Write(".0");
+            }
+            context.ExpectingValue = false;
+        }
+
 
         public void Write(decimal number) {
             DoValidation(Condition.Value);

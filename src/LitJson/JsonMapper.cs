@@ -13,11 +13,9 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 
-namespace LitJson
-{
+namespace LitJson {
 
-    internal struct PropertyMetadata
-    {
+    internal struct PropertyMetadata {
         public Type Type { get; set; }
         public MemberInfo Info { get; set; }
         public JsonIgnoreWhen Ignore { get; set; }
@@ -26,8 +24,7 @@ namespace LitJson
         public bool Include { get; set; }
     }
 
-    internal struct ArrayMetadata
-    {
+    internal struct ArrayMetadata {
         public bool IsArray { get; set; }
         public bool IsList { get; set; }
 
@@ -45,8 +42,7 @@ namespace LitJson
         }
     }
 
-    internal struct ObjectMetadata
-    {
+    internal struct ObjectMetadata {
         public IDictionary<string, PropertyMetadata> Properties { get; set; }
         public bool IsDictionary { get; set; }
 
@@ -78,8 +74,7 @@ namespace LitJson
     /// <summary>
     /// JSON to .Net object and object to JSON conversions.
     /// </summary>
-    public class JsonMapper
-    {
+    public class JsonMapper {
         private static readonly int maxNestingDepth;
         private static readonly IFormatProvider datetimeFormat;
         private const string DefaultDateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK";
@@ -125,7 +120,7 @@ namespace LitJson
 #if UNITY_5 || UNITY_2018
             UnityTypeBindings.Register();
 #endif
-            //ä»¥ä¸‹æ³¨å†Œå­—å…¸keyçš„è‡ªå®šä¹‰åºåˆ—åŒ–æ–¹æ³•
+            //ÒÔÏÂ×¢²á×ÖµäkeyµÄ×Ô¶¨ÒåĞòÁĞ»¯·½·¨
             JsonMapper.RegisterDictionaryKeyImporter<string, int>((s) => {
                 return int.Parse(s);
             });
@@ -532,7 +527,7 @@ namespace LitJson
                         //    keyValue = Convert.ChangeType(property, t);
                         //}
                         //catch (InvalidCastException ee) {
-                        //    throw new NotSupportedException("å­—å…¸çš„åºåˆ—åŒ–ï¼Œä¸æ”¯æŒ" + valueType.GenericTypeArguments[0].Name + "ç±»å‹çš„key");
+                        //    throw new NotSupportedException("×ÖµäµÄĞòÁĞ»¯£¬²»Ö§³Ö" + valueType.GenericTypeArguments[0].Name + "ÀàĞÍµÄkey");
                         //}
                         //object v;
                         //JsonData value = ReadValue(tdata.ElementType, reader) as JsonData;
@@ -548,7 +543,7 @@ namespace LitJson
                         //    v = Convert.ChangeType(d, valueType.GenericTypeArguments[1]);
                         //}
                         //else {
-                        //    throw new NotSupportedException("å­—å…¸çš„åºåˆ—åŒ–ï¼Œä¸æ”¯æŒ" + valueType.GenericTypeArguments[1].Name + "ç±»å‹çš„value");
+                        //    throw new NotSupportedException("×ÖµäµÄĞòÁĞ»¯£¬²»Ö§³Ö" + valueType.GenericTypeArguments[1].Name + "ÀàĞÍµÄvalue");
                         //}
 
                         //((IDictionary)instance).Add(keyValue, v);
@@ -568,7 +563,7 @@ namespace LitJson
                                     keyValue = Convert.ChangeType(property, t);
                                 }
                                 catch (InvalidCastException ee) {
-                                    throw new NotSupportedException("å­—å…¸çš„åºåˆ—åŒ–ï¼Œä¸æ”¯æŒ" + valueType.GetGenericArguments()[0].Name + "ç±»å‹çš„key");
+                                    throw new NotSupportedException("×ÖµäµÄĞòÁĞ»¯£¬²»Ö§³Ö" + valueType.GetGenericArguments()[0].Name + "ÀàĞÍµÄkey");
                                 }
                             }
                         }
@@ -701,7 +696,7 @@ namespace LitJson
                 writer.Write(Convert.ToUInt64((ulong)obj));
             };
             baseExportTable[typeof(float)] = delegate (object obj, JsonWriter writer) {
-                writer.Write(Convert.ToDouble((float)obj));
+                writer.Write((float)obj);
             };
             baseExportTable[typeof(decimal)] = delegate (object obj, JsonWriter writer) {
                 writer.Write(Convert.ToDecimal((decimal)obj));
@@ -711,9 +706,9 @@ namespace LitJson
             };
             baseExportTable[typeof(DateTimeOffset)] = delegate (object obj, JsonWriter writer) {
                 var v = (DateTimeOffset)obj;
-                //ISO8601æ ¼å¼
+                //ISO8601¸ñÊ½
                 string str = v.ToString("O");
-                //ä¸‹é¢è¿™ç§æ–¹å¼ä¹Ÿæ˜¯ISO8601
+                //ÏÂÃæÕâÖÖ·½Ê½Ò²ÊÇISO8601
                 //string.Format("{0}T{1}+{2}:{3}",
                 //     v.ToString("yyyy-MM-dd"),
                 //     v.TimeOfDay.ToString(),
